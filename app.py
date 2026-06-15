@@ -13,36 +13,39 @@ st.set_page_config(
 
 # ---------------- DATA ----------------
 
-resources = pd.DataFrame({
+if "resources" not in st.session_state:
 
-"Item":[
-"Scientific Calculator",
-"Umbrella",
-"Laptop Charger",
-"Lab Coat",
-"Power Bank",
-"First Aid Kit",
-"Arduino Kit",
-"USB Drive"
-],
+    st.session_state.resources = pd.DataFrame({
 
-"Category":[
-"Academic Items",
-"Emergency Resources",
-"Electronics",
-"Lab Equipment",
-"Electronics",
-"Emergency Resources",
-"Lab Equipment",
-"Academic Items"
-],
+    "Item":[
+    "Scientific Calculator",
+    "Umbrella",
+    "Laptop Charger",
+    "Lab Coat",
+    "Power Bank",
+    "First Aid Kit",
+    "Arduino Kit",
+    "USB Drive"
+    ],
 
-"Available":[15,10,8,12,6,5,4,20]
+    "Category":[
+    "Academic Items",
+    "Emergency Resources",
+    "Electronics",
+    "Lab Equipment",
+    "Electronics",
+    "Emergency Resources",
+    "Lab Equipment",
+    "Academic Items"
+    ],
 
-})
+    "Available":[15,10,8,12,6,5,4,20]
+
+    })
 
 
-images = {
+
+images={
 
 "Scientific Calculator":"images/calculator.jpg",
 "Umbrella":"images/umbrella.jpg",
@@ -56,7 +59,13 @@ images = {
 }
 
 
-penalties = pd.DataFrame({
+
+penalties=pd.DataFrame({
+
+"Roll Number":[
+"22A91A0001",
+"22A91A0002"
+],
 
 "Student":[
 "Rithika",
@@ -69,14 +78,17 @@ penalties = pd.DataFrame({
 ],
 
 "Days Late":[
-2,1
+2,
+1
 ],
 
 "Fine":[
-40,20
+40,
+20
 ]
 
 })
+
 
 
 # ---------------- SESSION ----------------
@@ -91,17 +103,18 @@ if "student_login" not in st.session_state:
 if "admin_login" not in st.session_state:
     st.session_state.admin_login=False
 
-if "borrow_popup" not in st.session_state:
-    st.session_state.borrow_popup=False
-
-if "my_borrowings" not in st.session_state:
-    st.session_state.my_borrowings=pd.DataFrame(
+if "borrowings" not in st.session_state:
+    st.session_state.borrowings=pd.DataFrame(
         columns=["Item","Due Date","Status"]
     )
 
+if "borrow_item" not in st.session_state:
+    st.session_state.borrow_item=None
 
 
-# ---------------- ROLE SELECT ----------------
+
+
+# ---------------- ROLE ----------------
 
 
 if st.session_state.role is None:
@@ -112,15 +125,10 @@ if st.session_state.role is None:
     )
 
 
-    st.subheader(
-        "Select Your Role"
-    )
+    a,b=st.columns(2)
 
 
-    c1,c2=st.columns(2)
-
-
-    with c1:
+    with a:
 
         if st.button(
             "👨‍🎓 Student",
@@ -131,8 +139,7 @@ if st.session_state.role is None:
             st.rerun()
 
 
-
-    with c2:
+    with b:
 
         if st.button(
             "👨‍💼 Admin",
@@ -144,9 +151,11 @@ if st.session_state.role is None:
 
 
 
-# =====================================================
+
+
+# =================================================
 # STUDENT
-# =====================================================
+# =================================================
 
 
 elif st.session_state.role=="student":
@@ -156,93 +165,55 @@ elif st.session_state.role=="student":
 
 
         st.title(
-            "👨‍🎓 Student Account"
+            "👨‍🎓 Student Login"
         )
 
 
         option=st.radio(
-            "Choose",
+            "Option",
             [
-                "Sign In",
-                "Sign Up"
+            "Sign In",
+            "Sign Up"
             ]
         )
 
 
-
         if option=="Sign Up":
 
-
-            name=st.text_input(
-                "Name"
-            )
-
-
-            email=st.text_input(
-                "Email"
-            )
+            st.text_input("Name")
+            st.text_input("Email")
+            st.text_input("Password",type="password")
 
 
-            password=st.text_input(
-                "Password",
-                type="password"
-            )
+            if st.button("Create Account"):
 
-
-            if st.button(
-                "Create Account"
-            ):
-
-
-                if email and password:
-
-                    st.success(
-                        "Account created successfully. Sign In now."
-                    )
-
-                else:
-
-                    st.warning(
-                        "Fill details"
-                    )
-
+                st.success(
+                    "Account created successfully"
+                )
 
 
         else:
 
 
-            email=st.text_input(
-                "Email"
-            )
-
-
+            email=st.text_input("Email")
             password=st.text_input(
                 "Password",
                 type="password"
             )
 
 
-            if st.button(
-                "Sign In"
-            ):
+            if st.button("Sign In"):
 
 
                 if email and password:
 
-
                     st.session_state.student_login=True
-
-                    st.success(
-                        "Login Successful"
-                    )
-
                     st.rerun()
-
 
                 else:
 
                     st.warning(
-                        "Enter any values"
+                        "Enter details"
                     )
 
 
@@ -250,22 +221,17 @@ elif st.session_state.role=="student":
     else:
 
 
-
         page=st.sidebar.selectbox(
             "Menu",
             [
-                "Dashboard",
-                "Catalog",
-                "Item Details",
-                "My Borrowings",
-                "Notifications",
-                "Return Item"
+            "Dashboard",
+            "Catalog",
+            "My Borrowings",
+            "Return Item",
+            "Notifications"
             ]
         )
 
-
-
-        # ---------------- DASHBOARD ----------------
 
 
         if page=="Dashboard":
@@ -277,7 +243,7 @@ elif st.session_state.role=="student":
 
 
             search=st.text_input(
-                "🔍 Search Resource"
+                "Search Resource"
             )
 
 
@@ -293,15 +259,15 @@ elif st.session_state.role=="student":
             )
 
 
-            filtered=resources.copy()
+            filtered=st.session_state.resources.copy()
 
 
 
             if search:
 
 
-                result=resources[
-                    resources.Item.str.contains(
+                result=filtered[
+                    filtered.Item.str.contains(
                         search,
                         case=False
                     )
@@ -310,31 +276,24 @@ elif st.session_state.role=="student":
 
                 if not result.empty:
 
-
-                    new_category=result.iloc[0].Category
-
+                    filtered=result
 
                     st.info(
-                        f"Category updated to {new_category}"
+                        "Category updated automatically"
                     )
-
-
-                    filtered=result
 
 
                 else:
 
-
                     st.warning(
-                        "No matching resource found"
+                        "No resource found"
                     )
 
-                    filtered=resources.iloc[0:0]
+                    filtered=filtered.iloc[0:0]
 
 
 
             elif category!="All":
-
 
                 filtered=filtered[
                     filtered.Category==category
@@ -344,152 +303,109 @@ elif st.session_state.role=="student":
 
             if not filtered.empty:
 
-
-                selected=st.selectbox(
-                    "Select Resource",
+                item=st.selectbox(
+                    "Select Item",
                     filtered.Item
                 )
 
 
-                item=filtered[
-                    filtered.Item==selected
+                row=filtered[
+                    filtered.Item==item
                 ].iloc[0]
 
 
-                a,b=st.columns(2)
+                st.write(
+                    "Category:",
+                    row.Category
+                )
+
+                st.write(
+                    "Available:",
+                    row.Available
+                )
 
 
-                with a:
 
-                    if os.path.exists(images[selected]):
+                if st.button("Borrow Now"):
 
-                        st.image(
-                            images[selected],
-                            width=220
-                        )
+                    st.session_state.borrow_item=item
+        # -------- BORROW CONFIRMATION --------
 
 
-                with b:
-
-                    st.subheader(selected)
+        if st.session_state.borrow_item:
 
 
-                    st.write(
-                        "Category:",
-                        item.Category
+            st.divider()
+
+
+            st.success(
+                "Borrow Confirmation"
+            )
+
+
+            agree=st.checkbox(
+                "I agree to return the item on time"
+            )
+
+
+            if st.button(
+                "Confirm Borrow"
+            ):
+
+
+                if agree:
+
+
+                    new=pd.DataFrame({
+
+                    "Item":[
+                    st.session_state.borrow_item
+                    ],
+
+                    "Due Date":[
+                    str(date.today()+timedelta(days=3))
+                    ],
+
+                    "Status":[
+                    "Active"
+                    ]
+
+                    })
+
+
+                    st.session_state.borrowings=pd.concat(
+                        [
+                        st.session_state.borrowings,
+                        new
+                        ],
+                        ignore_index=True
                     )
 
 
-                    st.write(
-                        "Available:",
-                        item.Available
-                    )
+                    st.session_state.resources.loc[
+                        st.session_state.resources.Item==
+                        st.session_state.borrow_item,
+                        "Available"
+                    ]-=1
 
-
-                    st.write(
-                        "Condition: Good"
-                    )
-                if st.button(
-                    "🛒 Borrow Now"
-                ):
-
-
-                    st.session_state.borrow_popup=True
-
-                    st.session_state.selected=selected
-
-
-
-                if st.session_state.borrow_popup:
-
-
-                    st.divider()
 
 
                     st.success(
-                        "Borrow Confirmation"
+                        "Borrowed Successfully"
                     )
 
 
-                    st.write(
-                        "Item:",
-                        st.session_state.selected
+                    st.session_state.borrow_item=None
+
+                    st.rerun()
+
+
+                else:
+
+                    st.warning(
+                        "Accept policy first"
                     )
 
-
-                    st.write(
-                        "Borrow Date:",
-                        date.today()
-                    )
-
-
-                    st.write(
-                        "Return Date:",
-                        date.today()+timedelta(days=3)
-                    )
-
-
-                    agree=st.checkbox(
-                        "I agree to return on time"
-                    )
-
-
-                    if st.button(
-                        "Confirm Borrow"
-                    ):
-
-
-                        if agree:
-
-
-                            new=pd.DataFrame({
-
-                            "Item":[
-                            st.session_state.selected
-                            ],
-
-                            "Due Date":[
-                            str(date.today()+timedelta(days=3))
-                            ],
-
-                            "Status":[
-                            "Active"
-                            ]
-
-                            })
-
-
-                            st.session_state.my_borrowings=pd.concat(
-                                [
-                                st.session_state.my_borrowings,
-                                new
-                                ],
-                                ignore_index=True
-                            )
-
-
-                            resources.loc[
-                                resources.Item==st.session_state.selected,
-                                "Available"
-                            ]-=1
-
-
-                            st.success(
-                                "Borrowed Successfully"
-                            )
-
-
-                            st.session_state.borrow_popup=False
-
-                            st.rerun()
-
-
-
-                        else:
-
-                            st.warning(
-                                "Accept return policy"
-                            )
 
 
 
@@ -505,101 +421,38 @@ elif st.session_state.role=="student":
             )
 
 
-            for _,r in resources.iterrows():
+            for _,row in st.session_state.resources.iterrows():
 
 
                 st.subheader(
-                    r.Item
+                    row.Item
                 )
-
-
-                if os.path.exists(images[r.Item]):
-
-                    st.image(
-                        images[r.Item],
-                        width=150
-                    )
 
 
                 st.write(
                     "Category:",
-                    r.Category
+                    row.Category
                 )
 
 
                 st.write(
                     "Available:",
-                    r.Available
+                    row.Available
                 )
 
 
                 if st.button(
-                    f"Borrow {r.Item}"
+                    f"Borrow {row.Item}"
                 ):
 
 
-                    st.session_state.selected=r.Item
-
-                    st.session_state.borrow_popup=True
+                    st.session_state.borrow_item=row.Item
 
                     st.rerun()
 
 
                 st.divider()
 
-
-
-
-        # ---------------- DETAILS ----------------
-
-
-        elif page=="Item Details":
-
-
-            st.title(
-                "📦 Item Details"
-            )
-
-
-            item=st.selectbox(
-                "Select Item",
-                resources.Item
-            )
-
-
-            if os.path.exists(images[item]):
-
-                st.image(
-                    images[item],
-                    width=250
-                )
-
-
-            row=resources[
-                resources.Item==item
-            ].iloc[0]
-
-
-            st.write(
-                "Category:",
-                row.Category
-            )
-
-
-            st.write(
-                "Availability:",
-                row.Available
-            )
-
-
-            st.write(
-                "Borrow Duration: 3 Days"
-            )
-
-
-            st.write(
-                "Penalty: ₹20/day"
-            )
 
 
 
@@ -615,11 +468,11 @@ elif st.session_state.role=="student":
             )
 
 
-            if st.session_state.my_borrowings.empty:
+            if st.session_state.borrowings.empty:
 
 
                 st.info(
-                    "No borrowings yet"
+                    "No borrowed items"
                 )
 
 
@@ -627,9 +480,85 @@ elif st.session_state.role=="student":
 
 
                 st.dataframe(
-                    st.session_state.my_borrowings,
+                    st.session_state.borrowings,
                     use_container_width=True
                 )
+
+
+
+
+
+
+        # ---------------- RETURN ----------------
+
+
+        elif page=="Return Item":
+
+
+            st.title(
+                "↩ Return Item"
+            )
+
+
+
+            if st.session_state.borrowings.empty:
+
+
+                st.info(
+                    "No items to return"
+                )
+
+
+            else:
+
+
+                selected=st.selectbox(
+                    "Select Item",
+                    st.session_state.borrowings.Item
+                )
+
+
+                confirm=st.checkbox(
+                    "Confirm Return"
+                )
+
+
+                if st.button(
+                    "Complete Return"
+                ):
+
+
+                    if confirm:
+
+
+                        st.session_state.borrowings=(
+                            st.session_state.borrowings[
+                            st.session_state.borrowings.Item!=selected
+                            ]
+                        )
+
+
+                        st.session_state.resources.loc[
+                            st.session_state.resources.Item==selected,
+                            "Available"
+                        ]+=1
+
+
+
+                        st.success(
+                            "Returned Successfully"
+                        )
+
+
+                        st.rerun()
+
+
+
+                    else:
+
+                        st.warning(
+                            "Confirm return"
+                        )
 
 
 
@@ -647,138 +576,11 @@ elif st.session_state.role=="student":
 
 
             st.info(
-                "No new notifications"
+                "No notifications"
             )
-
-
-
-
-
-        # ---------------- RETURN ----------------
-
-
-        elif page=="Return Item":
-
-
-            st.title(
-                "↩ Return Item"
-            )
-
-
-            if st.session_state.my_borrowings.empty:
-
-
-                st.info(
-                    "No items to return"
-                )
-
-
-            else:
-
-
-                st.dataframe(
-                    st.session_state.my_borrowings,
-                    use_container_width=True
-                )
-
-
-
-                selected_return=st.selectbox(
-                    "Select Item To Return",
-                    st.session_state.my_borrowings.Item
-                )
-
-
-
-                row=st.session_state.my_borrowings[
-                    st.session_state.my_borrowings.Item==selected_return
-                ].iloc[0]
-
-
-
-                due=pd.to_datetime(
-                    row["Due Date"]
-                ).date()
-
-
-
-                fine=0
-
-
-                if date.today()>due:
-
-
-                    late=(date.today()-due).days
-
-                    fine=late*20
-
-
-                    st.warning(
-                        f"Late by {late} day(s)"
-                    )
-
-
-                    st.error(
-                        f"Penalty ₹{fine}"
-                    )
-
-
-                    paid=st.checkbox(
-                        "Pay Penalty"
-                    )
-
-
-                else:
-
-                    paid=True
-
-
-
-                confirm=st.checkbox(
-                    "Confirm Return"
-                )
-
-
-
-                if st.button(
-                    "Complete Return"
-                ):
-
-
-                    if confirm and paid:
-
-
-                        st.session_state.my_borrowings = (
-                            st.session_state.my_borrowings[
-                            st.session_state.my_borrowings.Item
-                            != selected_return
-                            ]
-                        )
-
-
-                        resources.loc[
-                            resources.Item==selected_return,
-                            "Available"
-                        ]+=1
-
-
-                        st.success(
-                            "Returned Successfully"
-                        )
-
-
-                        st.rerun()
-
-
-                    else:
-
-
-                        st.warning(
-                            "Confirm return first"
-                        )
-# =====================================================
+# =================================================
 # ADMIN
-# =====================================================
+# =================================================
 
 
 elif st.session_state.role=="admin":
@@ -808,10 +610,9 @@ elif st.session_state.role=="admin":
         ):
 
 
-            # Accept any values
+            # accepts any values
 
             st.session_state.admin_login=True
-
             st.rerun()
 
 
@@ -819,16 +620,18 @@ elif st.session_state.role=="admin":
     else:
 
 
-
         page=st.sidebar.selectbox(
             "Admin Menu",
             [
             "Dashboard",
-            "Inventory",
+            "Inventory Management",
             "Penalty Management"
             ]
         )
 
+
+
+        # -------- ADMIN DASHBOARD --------
 
 
         if page=="Dashboard":
@@ -839,36 +642,42 @@ elif st.session_state.role=="admin":
             )
 
 
-            a,b,c,d=st.columns(4)
+            c1,c2,c3,c4=st.columns(4)
 
 
-            a.metric(
-                "Total Resources",
-                len(resources)
+            c1.metric(
+                "Total Items",
+                len(st.session_state.resources)
             )
 
 
-            b.metric(
+            c2.metric(
                 "Borrowed",
-                len(st.session_state.my_borrowings)
+                len(st.session_state.borrowings)
             )
 
 
-            c.metric(
-                "Overdue",
-                0
-            )
-
-
-            d.metric(
+            c3.metric(
                 "Available",
-                int(resources.Available.sum())
+                int(
+                    st.session_state.resources.Available.sum()
+                )
+            )
+
+
+            c4.metric(
+                "Penalties",
+                len(penalties)
             )
 
 
 
 
-        elif page=="Inventory":
+
+        # -------- INVENTORY --------
+
+
+        elif page=="Inventory Management":
 
 
             st.title(
@@ -876,59 +685,102 @@ elif st.session_state.role=="admin":
             )
 
 
+            st.subheader(
+                "Current Inventory"
+            )
+
+
             st.dataframe(
-                resources,
+                st.session_state.resources,
                 use_container_width=True
             )
 
 
-            new_item=st.text_input(
-                "Add Item"
+
+            st.divider()
+
+
+
+            st.subheader(
+                "Add New Resource"
             )
 
 
-            qty=st.number_input(
+            item=st.text_input(
+                "Item Name"
+            )
+
+
+            category=st.selectbox(
+                "Category",
+                [
+                "Academic Items",
+                "Lab Equipment",
+                "Electronics",
+                "Emergency Resources"
+                ]
+            )
+
+
+            quantity=st.number_input(
                 "Quantity",
                 min_value=1
             )
 
 
+
             if st.button(
-                "Add Item"
+                "➕ Add Item"
             ):
 
 
-                if new_item:
+                if item:
 
 
-                    new_row=pd.DataFrame({
+                    new_item=pd.DataFrame({
 
-                    "Item":[new_item],
+                    "Item":[item],
 
-                    "Category":[
-                    "Academic Items"
-                    ],
+                    "Category":[category],
 
-                    "Available":[qty]
+                    "Available":[quantity]
 
                     })
 
 
-                    resources=pd.concat(
+
+                    st.session_state.resources=pd.concat(
                         [
-                        resources,
-                        new_row
+                        st.session_state.resources,
+                        new_item
                         ],
                         ignore_index=True
                     )
 
 
+
                     st.success(
-                        "Item Added"
+                        "Item added successfully"
+                    )
+
+
+                    st.rerun()
+
+
+
+                else:
+
+
+                    st.warning(
+                        "Enter item name"
                     )
 
 
 
+
+
+
+        # -------- PENALTY --------
 
 
         elif page=="Penalty Management":
@@ -948,7 +800,9 @@ elif st.session_state.role=="admin":
 
 
 
-# ---------------- SIGN OUT ----------------
+# =================================================
+# SIGN OUT
+# =================================================
 
 
 if st.session_state.role is not None:
@@ -968,7 +822,6 @@ if st.session_state.role is not None:
 
         st.session_state.admin_login=False
 
-        st.session_state.borrow_popup=False
-
+        st.session_state.borrow_item=None
 
         st.rerun()
