@@ -1,2 +1,2 @@
-# Smart-Campus-Resource-Sharing-System
-RIS_G3_001 
+# GrabZy
+Smart-Campus-Resource-Sharing-System 
